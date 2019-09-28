@@ -43,14 +43,11 @@ QString nfcsender::nfcEncode(QString nfcData)
         Solution:
         - Cắt hai kí tự liên tiếp --> lưu vào một thanh ghi để lưu trữ
         - Đổi thứ tự của các kí tự để mã hóa đúng như yêu cầu
-
         Explain:
-        - C480748A
+        - C480748A là chuổi Nfc module đọc được
+        --> Phải mã hóa thành 8A:74:80:C4
     */
-
     QString resultEcode;
-    // Tao list QString de luu cac tu ma hoa
-    QStringList listContainEcodeNfc;
     for(int position = 0; position < result.size(); position ++)
     {
         if(0 == position%2) {
@@ -62,9 +59,23 @@ QString nfcsender::nfcEncode(QString nfcData)
     }
 
     resultEcode =resultEcode.insert(0, "00:00:00:");
+    /*
+     * 20 là chiều dài tối đa của chuổi mã hóa
+     * Example:
+     *  -   04:68:40:DA:FA:43:80
+     * Sau khi chèn thêm chuổi 00:00:00:
+     * ==> 00:00:00:04:68:40:DA:FA:43:80
+     * ==> Chiều dài của chuổi lúc này là 29
+     * Vậy là phải cắt từ vị trí thứ 9 và chiều dài chuổi cần lấy
+     * là 20.
+     * -----------------------
+     * String:  00:00:00:04:68:40:DA:FA:43:80
+     * Number:  0123456789----------------->28
+     * Size: 29
+     */
     if(resultEcode.size() > 20)
     {
-        QString lastResultEcode = resultEcode.mid((resultEcode.size() - 20 - 1) ,resultEcode.size());
+        QString lastResultEcode = resultEcode.mid((resultEcode.size() - 20) , int(20));
 #ifdef nfcDebug
     qDebug() << "lastResultEcode:" << lastResultEcode;
 #endif
